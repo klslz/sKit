@@ -1,0 +1,170 @@
+#!/bin/sh
+#
+# soundcheck's tuning kit - pCP  - sKit-tweaks
+# activates advanced system configurations
+# for RPi3 and RPi4 and related CM modules
+#
+# Latest Update: Feb-14-2021
+#
+#
+# Copyright © 2021 - Klaus Schulz
+# All rights reserved
+# 
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation, 
+# either version 3 of the License, or (at your option) 
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, 
+# but WITHOUT ANY WARRANTY; without even the implied warranty 
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# See the GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License 
+# along with this program. 
+#
+# If not, see http://www.gnu.org/licenses
+#
+########################################################################
+VERSION=1.0
+
+fname="${0##*/}"
+opts="$@"
+
+###functions############################################################
+out() {
+
+    echo -e "\tprogram aborted" >>$LOG
+    echo -e "\t${RED}ERROR: $@ ${NC}" >>$LOG
+    exit 1
+}
+
+
+license() {
+
+    echo "
+    soundcheck's tuning kit (${fname})
+    
+    Copyright © 2021 - Klaus Schulz (aka soundcheck)
+    All rights reserved
+
+    This program is free software: you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) 
+    any later version.
+    
+    This program is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty 
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+    See the GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License 
+    along with this program. 
+
+    If not, see http://www.gnu.org/licenses
+    " >>$LOG
+}
+
+
+env_set() {
+
+    BOOT_DEV=/dev/mmcblk0p1 
+    BOOT_MNT=/mnt/mmcblk0p1
+    ROOT_DEV=/dev/mmcblk0p2
+    ROOT_MNT=/mnt/mmcblk0p2
+
+
+    TCE="$ROOT_MNT/tce"
+    sKitbase=$TCE/sKit
+    LOGDIR=$sKitbase/log
+    LOG=$LOGDIR/$fname.log
+
+    TIMEOUT="180"
+
+    
+    CPU_AFFINITY=0x4
+}
+
+
+set_log() {
+
+    echo >$LOG
+}
+
+
+check_pcp() {
+
+    if ! uname -a | grep -q -i pcp; then 
+    
+        out "No piCorePlayer system"
+       
+    fi
+}
+
+
+set_sl_affinity() {
+
+    for i in $(ps -eLo tid,comm,command | grep squeezelite-custom | grep -v "output_alsa" | grep -v grep | awk '{print $1}'); do
+
+        sudo taskset -p $CPU_AFFINITY $i >>$LOG
+
+    done
+}
+
+
+stop_idlenet() {
+
+    ACTIF=$(route | grep '^default' | grep -o '[^ ]*$')
+    if [[ "$ACTIF" == "eth0" ]]; then
+
+        sudo ifconfig wlan0 down >>$LOG
+         
+    elif [[ "$ACTIF" == "wlan0" ]]; then
+    
+        sudo ifconfig eth0 down >>$LOG
+
+    fi
+}
+
+
+stop_procs() {
+
+    procs='httpd ssh udhcpc pcpmdnsd'
+
+    sleep $TIMEOUT
+
+    for i in $procs; do
+
+        sudo pkill -f $i >>$LOG
+
+    done
+}
+
+
+log_stat() {
+
+    ps -Leo rtprio,pri,psr,pid,tid,comm,cmd >>$LOG
+    ifconfig >>$LOG
+}
+
+
+clear_cache() {
+
+    sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
+}
+
+
+
+#MAINMAIN##################################
+check_pcp
+env_set
+set_log
+license
+set_sl_affinity
+stop_idlenet
+stop_procs
+log_stat
+clear_cache
+
+exit 0
+###########################################
