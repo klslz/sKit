@@ -53,3 +53,28 @@ This tool allows to choose some high quality libsoxr presets, for squeezelite
 
 This tool runs several pCP related efficiency tweaks. 
 It'll be autostarted at system boot. It needs to be activated in the pCP-WEB-UI.
+
+
+
+### sKit-check.sh
+
+This tool checks the configuration state of pCP against the recommendations made in the
+Audio Streaming series.
+
+
+
+
+### sKit-restore.sh (Beta)
+
+This tool restores SD-card images made with the pCP 7.01 backup function, while the
+RPi is up'n running. Remember: pCP resides 100% in RAM.
+The tools looks for a pcp-backup file under /tmp
+
+Handle with care! As everything you'll find over here, you run this 100% at your own risk!
+
+
+
+
+
+
+

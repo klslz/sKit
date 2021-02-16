@@ -4,7 +4,7 @@
 # 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Feb-14-2021
+# Latest Update: Feb-16-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,11 +25,11 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.0
+VERSION=1.1
+sKit_VERSION=1.1
 
 fname="${0##*/}"
 opts="$@"
-
 
 ###functions############################################################
 colors() {
@@ -195,10 +195,10 @@ env_set() {
     REPO_PCP1="https://repo.picoreplayer.org/repo"
     REPO_PCP2="http://picoreplayer.sourceforge.net/tcz_repo"
     REPO_PCP="$REPO_PCP1"
-    REPO_sKit="https://raw.githubusercontent.com/klslz/tuningkitpcp/main"
+    REPO_sKit="https://raw.githubusercontent.com/klslz/tuningkitpcp/master"
     TIMEOUT=120
 
-    sKit="sKit-manager.sh sKit-custom-squeezelite.sh sKit-led-manager.sh sKit-tweaks sKit-src-manager.sh"
+    sKit="sKit-manager.sh sKit-custom-squeezelite.sh sKit-led-manager.sh sKit-tweaks sKit-src-manager.sh sKit-restore.sh sKit-check.sh"
 
     EXTENSIONS="procps-ng" 
 }

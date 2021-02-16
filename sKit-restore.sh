@@ -1,7 +1,7 @@
 #!/bin/sh
 #
-# soundcheck's tuning kit - pCP - sKit-led-manager.sh
-# enables and disables LEDs on piCorePlayer
+# soundcheck's tuning kit - pCP - sKit-restore-image.sh
+# restores backups while is pCP booted
 # for RPi3 and RPi4 and related CM modules
 #
 # Latest Update: Feb-16-2021
@@ -26,7 +26,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.1
+VERSION=1.1-beta1
 sKit_VERSION=1.1
 
 fname="${0##*/}"
@@ -46,7 +46,8 @@ out() {
 
     echo -e "\tprogram aborted"
     echo -e "\t${RED}ERROR: $@ ${NC}"
-    DONE
+    echo
+    line
     exit 1
 }
 
@@ -66,7 +67,7 @@ checkroot() {
 header() {
 
     line
-    echo -e "\t     sKit - LED manager ($VERSION)"
+    echo -e "\t     sKit - image restore ($VERSION)"
     echo -e "\t       (c) soundcheck"
     echo
     echo -e "\t      welcome $(id -un)@$(hostname)"
@@ -74,38 +75,12 @@ header() {
 }
 
 
-DONE() {
+halt_system() {
 
+    echo -e "\thalting system now"
     line
-}
-
-
-countdown() {
-
-    counter=$1
-    while [[ "$counter" -gt 0 ]]; do
-
-
-        echo -ne -e "\t>> $counter \r"
-        let counter--
-        sleep 1
-
-    done
-    echo -e "\t>> 0"
-    line
-}
-
-
-reboot_system() {
-
-   if [[ "$REBOOT" == "true" ]]; then
-
-        echo -e "\trebooting system in"
-        countdown 10
-        sync
-        sudo reboot
-
-   fi
+    sudo halt
+    exit 0
 }
 
 ###################################
@@ -158,8 +133,14 @@ env_set() {
     LOGDIR=$sKitbase/log
     LOG=$LOGDIR/$fname.log
     BOOT_DEV=/dev/mmcblk0p1 
+    ROOT_DEV=/mnt/mmcblk0p2
     BOOT_MNT=/mnt/mmcblk0p1
-    CONFIG=$BOOT_MNT/config.txt
+    ROOT_MNT=/mnt/mmcblk0p2
+    PCP_DEV=/dev/mmcblk0
+    BASE=/tmp
+    HN=$(hostname)
+    procs='httpd udhcpc pcpmdnsd squeezelite'
+
 }
 
 
@@ -173,71 +154,109 @@ set_log() {
 check_pcp() {
 
     if ! uname -a | grep -q -i pcp; then 
-    
+
        out "No piCorePlayer system"
-       
+
     fi
 }
 
 
-mount_boot() {
+save_config() {
 
-    echo -e "\tmounting boot partition"
-    if [[ ! -d $BOOT_MNT ]]; then 
+    sudo filetool.sh -b >/dev/null
+    sync
+}
 
-        sudo mkdir -p $BOOT_MNT
+
+umount_partitions() {
+
+    echo -e "\tun-mounting partitions"
+    if grep -q "mmcblk0p1" /proc/mounts; then 
+
+        sudo umount -l /mnt/mmcblk0p1 2>$LOG
 
     fi
-    if grep -q "$BOOT_DEV" /proc/mounts; then
-    
-        sudo umount -f "$BOOT_DEV"
+    if grep -q "mmcblk0p2" /proc/mounts; then 
+
+        sudo umount -l /mnt/mmcblk0p2 2>$LOG
 
     fi
-    sudo mount $BOOT_DEV $BOOT_MNT || out "mounting boot"
     sleep 1
 }
  
 
-leds_off() {
+find_image() {
 
-    echo -e "\tdisabling LEDs"
-    sudo sed -i 's/#---End-Custom.*/\###BOF sKit\
-dtoverlay=act-led\
-##disable ACT LED\
-dtparam=act_led_trigger=none\
-dtparam=act_led_activelow=off\
-##disable the PWR LED\
-dtparam=pwr_led_trigger=none\
-dtparam=pwr_led_activelow=off\
-##disable ethernet port LEDs\
-dtparam=eth_led0=4\
-dtparam=eth_led1=4\
-###EOF sKit\
-#---End-Custom----------------------------------------/g' $CONFIG
+    echo -e "\tsearching image"
+    IMAGE="$(find $BASE -name "*pCP*img.gz" -print | grep $HN | sort | tail -1 )"
+    if [[ -z "$IMAGE" ]]; then 
+
+        out "no backup image found"
+
+    fi
+    echo -e "\t  >> $IMAGE"
 }
 
 
-leds_on() {
+stop_procs() {
 
-    echo -e "\tenabling LEDs"
-    sudo sed -i '/###BOF sKit/,/###EOF sKit/d' $CONFIG
+
+    echo -e "\tstopping processes"
+    for i in $procs; do
+
+        sudo pkill -f $i >/dev/null 2>&1
+        sleep 1
+
+    done
+
+    echo -e "\tclearing caches"
+    sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
 }
 
 
-toggle_leds() {
+restore_image() {
 
-    echo -e "\tverifying LED stat"
-    if grep -q "LEDS" $CONFIG; then
-   
-        echo -e "\t   currently disabled"
-        leds_on
+    echo
+    echo -e "\trestore image"
+    echo
+    echo -e "\t${RED}WARNING: all data will now be overwritten!!"
+    echo
+    while true; do
+
+        read -t 120 -r -p "        confirm to restore? (y/n): " yn
+        case $yn in
+
+            [Yy]* ) restore=true;  break;;
+            [Nn]* ) restore=false; break;;
+                * ) echo -e "\t  please answer (y)es or (n)o!!!";;
+
+         esac
+
+    done
+    echo -e "\t ${NC}"
+
+    if [[ "$restore" == "true" ]]; then
+
+        set_log
+        save_config
+        stop_procs
+        umount_partitions
+        sleep 2
+        echo -e "\texecuting restore"
+        sudo gunzip -c $IMAGE | dd of=$PCP_DEV bs=1M >/dev/null 2>&1 || out "problems restoring image"
+        sync
+        echo
+        echo -e "\t${GREEN}image successfully restored${NC}"
+        echo
+        halt_system
 
     else
+    
+        echo -e "\timage restore cancelled"
 
-      echo -e "\t   currently enabled"
-       leds_off
     fi
 }
+
 
 ###main#######################################
 colors
@@ -247,13 +266,9 @@ header
 
 check_pcp
 env_set
-set_log
-mount_boot
-toggle_leds
-sync
-REBOOT=true
+find_image
+restore_image
 
-DONE
-reboot_system
+line
 exit 0
 ##############################################
