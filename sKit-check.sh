@@ -340,14 +340,9 @@ check_sKitrev() {
     tskm="/tmp/$skm"
     lskm="$sKitbase/bin/$skm"
     wget -q "$REPO_sKit/$skm" -O "$tskm" 
-    skit_reporev=$(grep "sKit_VERSION=" $tskm | cut -f 2 -d "=")
-    skit_actrev=$(grep "sKit_VERSION=" $lskm | cut -f 2 -d "=")
-    if [[ "$skit_actrev" != "sKit_reporev" ]]; then
-        RED "update available"
-    else
-        GREEN "up-2-date"
-    fi
-    rm $tskm
+    sKit_reporev=$(grep "sKit_VERSION=" $tskm | cut -f 2 -d "=")
+    sKit_actrev=$(grep "sKit_VERSION=" $lskm | cut -f 2 -d "=")
+    [[ "$sKit_actrev" == "$sKit_reporev" ]] && GREEN "up-2-date" || RED "update available"
 }
 
 
