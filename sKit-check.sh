@@ -4,7 +4,7 @@
 # checks the tuning status 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Feb-16-2021
+# Latest Update: Feb-17-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -26,7 +26,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.1
+VERSION=1.2
 sKit_VERSION=1.1
 
 fname="${0##*/}"
@@ -274,7 +274,7 @@ check_governor() {
 check_custom_squeezelite() {
 
     echo -en "\tcustom squeezelite\t"
-    /mnt/mmcblk0p2/tce/squeezelite-custom -? | grep -q "sKit" && GREEN "enabled" || RED "disabled" 
+    [[ -f /mnt/mmcblk0p2/tce/squeezelite-custom ]] && { GREEN "enabled"; CSL=1; } || RED "disabled" 
 }
 
 
@@ -351,6 +351,13 @@ check_bootloader() {
    act_bl=$(sudo vcgencmd bootloader_version | head -1)
 }
 
+
+load_rpi_vc() {
+
+    echo -en "\tloading RPi utils\t\t" >$LOG 2>&1
+    tce-load -sil rpi-vc >$LOG 2>&1
+} 
+
 ###main#######################################
 colors
 license
@@ -360,6 +367,7 @@ header
 check_pcp
 env_set
 set_log
+load_rpi_vc
 mount_boot
 
 check_temperature
@@ -375,10 +383,12 @@ check_netif
 check_leds
 check_skitweaks
 check_custom_squeezelite
-check_affinity_squeezelite
-check_rambuffer_squeezelite
-check_alsa_params
-check_priority
+if [[ "$CSL" == "1" ]]; then 
+    check_affinity_squeezelite
+    check_rambuffer_squeezelite
+    check_alsa_params
+    check_priority
+fi
 
 check_bootloader
 check_sKitrev
