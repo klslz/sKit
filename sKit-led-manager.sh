@@ -26,7 +26,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.1
+VERSION=1.2
 sKit_VERSION=1.3
 
 fname="${0##*/}"
@@ -220,21 +220,21 @@ dtparam=eth_led1=4\
 leds_on() {
 
     echo -e "\tenabling LEDs"
-    sudo sed -i '/###BOF sKit/,/###EOF sKit/d' $CONFIG
+    sudo sed -i "/BOF sKit/,/EOF sKit/d" $CONFIG
 }
 
 
 toggle_leds() {
 
     echo -e "\tverifying LED stat"
-    if grep -q "LEDS" $CONFIG; then
+    if grep -q "LED" $CONFIG; then
    
         echo -e "\t   currently disabled"
         leds_on
 
     else
 
-      echo -e "\t   currently enabled"
+       echo -e "\t   currently enabled"
        leds_off
     fi
 }
