@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.1
+VERSION=1.2
 sKit_VERSION=1.3
 
 fname="${0##*/}"
@@ -189,7 +189,7 @@ pcp-libalac-dev
 pcp-libfaad2-dev
 pcp-libsoxr-dev" 
     BASE=/tmp/squeezelite
-    ISOLCPUS="2,3"
+    ISOLCPUS="3"
 }
 
 
@@ -496,7 +496,7 @@ set_isolcpus() {
 set_affinity() {
 
     echo -e "\tsetting task affinities"
-    sed -i -e 's/^SQLAFFINITY=.*/SQLAFFINITY="2"/g' \
+    sed -i -e 's/^SQLAFFINITY=.*/SQLAFFINITY="1,2"/g' \
            -e 's/^SQLOUTAFFINITY=.*/SQLOUTAFFINITY=""/g' $pcpcfg
 
     if ! cat $pcpcfg | grep "OTHER" | grep -q "\-A"; then 

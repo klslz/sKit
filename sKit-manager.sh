@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.2
+VERSION=1.3
 sKit_VERSION=1.3
 
 fname="${0##*/}"
@@ -285,7 +285,7 @@ check_install() {
 
 enable_sKit_tweaks() {
 
-    echo -e "\tenabling sKit-tweaks"
+    echo -e "\tpreparing for sKit-tweaks"
     sed -i 's|^USER_COMMAND_1=.*|USER_COMMAND_1="%23sleep 20;sKit-tweaks"|g' $pcpcfg
     sudo ln -s /mnt/mmcblk0p2/tce/sKit/bin/sKit-tweaks /usr/local/bin
     sudo echo "usr/local/bin/sKit-tweaks" >> $ftlst
