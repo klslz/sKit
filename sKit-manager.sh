@@ -4,7 +4,7 @@
 # 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Feb-16-2021
+# Latest Update: Apr-24-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,8 +25,8 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.1
-sKit_VERSION=1.1
+VERSION=1.2
+sKit_VERSION=1.3
 
 fname="${0##*/}"
 opts="$@"
@@ -200,7 +200,7 @@ env_set() {
 
     sKit="sKit-manager.sh sKit-custom-squeezelite.sh sKit-led-manager.sh sKit-tweaks sKit-src-manager.sh sKit-restore.sh sKit-check.sh"
 
-    EXTENSIONS="procps-ng" 
+    EXTENSIONS="procps-ng rpi-vc" 
 }
 
 

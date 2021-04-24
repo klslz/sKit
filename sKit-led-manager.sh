@@ -4,7 +4,7 @@
 # enables and disables LEDs on piCorePlayer
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Feb-16-2021
+# Latest Update: Apr-24-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -27,7 +27,7 @@
 #
 ########################################################################
 VERSION=1.1
-sKit_VERSION=1.1
+sKit_VERSION=1.3
 
 fname="${0##*/}"
 opts="$@"

@@ -4,7 +4,7 @@
 # checks the tuning status 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Feb-17-2021
+# Latest Update: Apr-24-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -26,8 +26,8 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.2
-sKit_VERSION=1.1
+VERSION=1.3
+sKit_VERSION=1.3
 
 fname="${0##*/}"
 opts="$@"
@@ -193,7 +193,7 @@ check_leds() {
 check_isolcpus() {
 
     echo -en "\tisolcpus\t\t"
-    grep -q -i 'isolcpus=2,3' $CMDLINE && GREEN "enabled" || RED "disabled" 
+    grep -q -i 'isolcpus=3' $CMDLINE && GREEN "enabled" || RED "disabled" 
 }
 
 
@@ -248,7 +248,7 @@ check_cpuclock() {
     if [[ "$cpu_clock" == "1500" ]]; then
         GREEN "$cpu_clock"
     else
-        YELLOW "$cpu_clock"
+        RED "$cpu_clock"
     fi
 }
 
@@ -280,31 +280,31 @@ check_custom_squeezelite() {
 
 check_affinity_squeezelite() {
 
-    echo -en "\tSL-custom affinity\t"
-    grep "SQLAFFINITY" $pcpcfg | grep -q "2" && GREEN "enabled" || RED "disabled"
-    echo -en "\tSL-custom-out affinity\t"
-    grep "OTHER" $pcpcfg | grep -q "\-A" && GREEN "enabled" || RED "disabled"
+    echo -en "\t  c-s affinity main\t"
+    grep "SQLAFFINITY" $pcpcfg | grep -q "1,2" && GREEN "OK" || RED "please check"
+    echo -en "\t  c-s affinity output\t"
+    grep "OTHER" $pcpcfg | grep -q "\-A" && GREEN "OK" || RED "please check"
 }
 
 
 check_rambuffer_squeezelite() {
 
-    echo -en "\tSL-custom ramplayback\t"
+    echo -en "\t  c-s ramplayback\t"
     RAMBUFFER=$(grep BUFFER_SIZE $pcpcfg | cut -f 2 -d ":" |sed 's/"//')
 
-    [[ $RAMBUFFER -lt 50000 ]]     && RED "too low @$RAMBUFFER"
-    [[ $RAMBUFFER -gt 50000 && $RAMBUFFER -lt 200000 ]] && YELLOW "not bad @$RAMBUFFER"
-    [[ $RAMBUFFER -gt 200000 ]] && GREEN "great"
+    [[ $RAMBUFFER -lt 100000 ]]     && RED "too low @$RAMBUFFER"
+    [[ $RAMBUFFER -ge 100000 && $RAMBUFFER -lt 300000 ]] && YELLOW "not bad @$RAMBUFFER"
+    [[ $RAMBUFFER -ge 300000 ]] && GREEN "OK"
 }
 
 
 check_alsa_params() {
 
-    echo -en "\tSL-custom alsa params\t"
+    echo -en "\t  c-s alsa params\t"
     alsa_params="$(grep "ALSA_PARAMS"  $pcpcfg | cut -f 2 -d '"')"
     if [[ "$alsa_params" == "::::" ]]; then
         RED "not set"
-    elif [[ "$alsa_params" == "120:4::1:" || "$alsa_params" == "65536:4::1:" ]]; then 
+    elif [[ "$alsa_params" == "160:4::1:" || "$alsa_params" == "65536:4::1:" ]]; then 
         GREEN "OK"
     else 
         YELLOW "please check values"
@@ -314,9 +314,15 @@ check_alsa_params() {
 
 check_priority() {
 
-    echo -en "\tSL-custom-out priority\t"
-    PRIORITY=$(grep "PRIORITY" $pcpcfg | cut -f 2 -d '"' |sed 's/"//')
-    [[ $PRIORITY -gt 45 && $PRIORITY -lt 50 ]] && GREEN "OK" || RED "please check"  
+    echo -en "\t  c-s output priority\t"
+    PRIORITY=$(grep "PRIORITY" $pcpcfg | cut -f 2 -d '"' | sed 's/"//')
+    if [[ -z $PRIORITY ]]; then
+        RED "not set"
+    elif [[ $PRIORITY -lt 45 && $PRIORITY -gt 50 ]]; then 
+        RED "please check" 
+    else
+        GREEN "OK"
+    fi   
 }
 
 
@@ -335,14 +341,16 @@ check_netif() {
 check_sKitrev() {
 
     echo
+    echo -e "\tsKit revison\t\t\t$sKit_VERSION"
     echo -en "\tsKit status\t\t"
     skm="sKit-manager.sh"
     tskm="/tmp/$skm"
     lskm="$sKitbase/bin/$skm"
     wget -q "$REPO_sKit/$skm" -O "$tskm" 
-    sKit_reporev=$(grep "sKit_VERSION=" $tskm | cut -f 2 -d "=")
-    sKit_actrev=$(grep "sKit_VERSION=" $lskm | cut -f 2 -d "=")
+    sKit_reporev=$(grep "sKit_VER" $tskm | cut -f 2 -d "=")
+    sKit_actrev=$(grep "sKit_VER" $lskm | cut -f 2 -d "=")
     [[ "$sKit_actrev" == "$sKit_reporev" ]] && GREEN "up-2-date" || RED "update available"
+    echo
 }
 
 
@@ -358,6 +366,14 @@ load_rpi_vc() {
     tce-load -sil rpi-vc >$LOG 2>&1
 } 
 
+
+print_pcp_version() {
+
+    pcpvers=$(grep "PCPVERS" /usr/local/etc/pcp/pcpversion.cfg | cut -f 2 -d '"' | cut -f 2 -d " ")
+    echo
+    echo -e "\tpCP version\t\t\t$pcpvers"
+}
+
 ###main#######################################
 colors
 license
@@ -369,6 +385,9 @@ env_set
 set_log
 load_rpi_vc
 mount_boot
+
+print_pcp_version
+check_sKitrev
 
 check_temperature
 check_governor
@@ -384,14 +403,13 @@ check_leds
 check_skitweaks
 check_custom_squeezelite
 if [[ "$CSL" == "1" ]]; then 
+    check_priority
     check_affinity_squeezelite
     check_rambuffer_squeezelite
     check_alsa_params
-    check_priority
 fi
 
 check_bootloader
-check_sKitrev
 
 DONE
 exit 0
