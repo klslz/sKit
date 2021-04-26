@@ -4,7 +4,7 @@
 # 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-24-2021
+# Latest Update: Apr-26-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,8 +25,8 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.3
-sKit_VERSION=1.3
+VERSION=1.4
+sKit_VERSION=1.4
 
 fname="${0##*/}"
 opts="$@"
@@ -148,13 +148,6 @@ license() {
 }
 
 
-set_log() {
-
-    echo -e "\tsetup log"
-    echo >$LOG
-}
-
-
 check_pcp() {
 
     if ! uname -a | grep -q -i pcp; then 
@@ -200,76 +193,17 @@ env_set() {
 
     sKit="sKit-manager.sh sKit-custom-squeezelite.sh sKit-led-manager.sh sKit-tweaks sKit-src-manager.sh sKit-restore.sh sKit-check.sh"
 
-    EXTENSIONS="procps-ng rpi-vc" 
-}
+    EXTENSIONS="procps-ng rpi-vc"
 
-
-set_sKitbase() {
-
-    echo -e "\tsetup sKit base"
-    if [[ ! -d "$sKitbase" ]]; then
+    BOOT_DEV=/dev/mmcblk0p1 
+    BOOT_MNT=/mnt/mmcblk0p1
+    CONFIG=$BOOT_MNT/config.txt
     
-         sudo mkdir -p "$BIN_BASE"
-         sudo mkdir -p "$LOG_BASE"
-         sudo chown -R $OWNER_BASE "$sKitbase"
-         sudo chmod -R $PERM_BASE  "$sKitbase"
-
-    fi
+    EXT_BA="sKit-extensions-backup.tar.gz"
 }
 
 
-set_ashrc() {
-
-    echo -e "\tadding changes to environment"
-    if ! grep -q "sKit" /home/tc/.ashrc; then
-        cat >>/home/tc/.ashrc <<'EOF'
-
-###BOF sKit
-alias  lr="ls -ltr"
-alias psp="ps -Leo rtprio,pri,psr,pid,tid,comm,cmd"
-
-if [ -n "$SSH_CONNECTION" ]; then
-   sudo pkill "sKit-tweaks" >/dev/null 2>&1
-   sudo pkill "sleep" >/dev/null 2>&1
-fi
-###EOF sKit
-EOF
-
-    fi
-}
-
-
-set_profile() {
-
-    echo -e "\tsetup sKit profile"
-    sudo tee /etc/profile.d/sKit-profile.sh >/dev/null <<'EOF'
-#!/bin/sh
-#sKit enviroment
-export PATH=$PATH:/mnt/mmcblk0p2/tce/sKit/bin
-EOF
-    sudo chmod 755 /etc/profile.d/sKit-profile.sh
-    sudo echo "etc/profile.d/sKit-profile.sh" >> $ftlst
-}
-
-
-remove_profile() {
-
-    echo -e "\tremoving sKit profile"
-    sudo rm /etc/profile.d/sKit-profile.sh
-    sudo sed -i "/sKit-profile/d " $ftlst
-}
-
-
-remove_sKit() {
-
-    echo -e "\tremoving sKit"
-    rm -rf "$sKitbase"
-    sed -i "/###BOF sKit/,/###EOF sKit/d" /home/tc/.ashrc
-    REBOOT=true
-}
-
-
-check_install() {
+check_sKit_install() {
 
     if [[ -d "$sKitbase" ]]; then
 
@@ -283,21 +217,70 @@ check_install() {
 }
 
 
-enable_sKit_tweaks() {
+set_sKit_log() {
 
-    echo -e "\tpreparing for sKit-tweaks"
-    sed -i 's|^USER_COMMAND_1=.*|USER_COMMAND_1="%23sleep 20;sKit-tweaks"|g' $pcpcfg
-    sudo ln -s /mnt/mmcblk0p2/tce/sKit/bin/sKit-tweaks /usr/local/bin
-    sudo echo "usr/local/bin/sKit-tweaks" >> $ftlst
+    #echo -e "\tsetup sKit log"
+    echo >$LOG
 }
 
 
-disable_sKit_tweaks() {
+set_sKit_base() {
 
-    echo -e "\tdisabling sKit-tweaks"
-    sed -i 's/^USER_COMMAND_1=.*/USER_COMMAND_1=""/g' $pcpcfg
-    sudo rm "/usr/local/bin/sKit-tweaks"
-    sudo sed -i "/sKit-tweaks/d " $ftlst
+    echo -e "\tsetting up sKit base"
+    if [[ ! -d "$sKitbase" ]]; then
+    
+         sudo mkdir -p "$BIN_BASE"
+         sudo mkdir -p "$LOG_BASE"
+         sudo chown -R $OWNER_BASE "$sKitbase"
+         sudo chmod -R $PERM_BASE  "$sKitbase"
+
+    fi
+}
+
+
+set_sKit_ashrc() {
+
+    echo -e "\tadding changes to shell environment"
+    if ! grep -q "sKit" /home/tc/.ashrc; then
+        cat >>/home/tc/.ashrc <<'EOF'
+
+###BOF sKit
+alias lr="ls -ltr"
+alias cs="cd  /mnt/mmcblk0p2/tce/sKit"
+alias psp="ps -Leo rtprio,pri,psr,pid,tid,comm,cmd"
+
+if [ -n "$SSH_CONNECTION" ]; then
+   sudo pkill "sKit-tweaks" >/dev/null 2>&1
+   sudo pkill "sleep" >/dev/null 2>&1
+fi
+###EOF sKit
+EOF
+
+    fi
+}
+
+
+set_sKit_profile() {
+
+    echo -e "\tadding sKit shell environment profile"
+    sudo tee /etc/profile.d/sKit-profile.sh >/dev/null <<'EOF'
+#!/bin/sh
+#sKit enviroment
+export PATH=$PATH:/mnt/mmcblk0p2/tce/sKit/bin
+EOF
+    sudo chmod 755 /etc/profile.d/sKit-profile.sh
+    sudo echo "etc/profile.d/sKit-profile.sh" >> $ftlst
+}
+
+
+
+
+enable_sKit_tweaks_mod() {
+
+    echo -e "\tenable sKit-tweaks mod"
+    sed -i 's|^USER_COMMAND_1=.*|USER_COMMAND_1="sleep 20;sKit-tweaks"|g' $pcpcfg
+    sudo ln -s /mnt/mmcblk0p2/tce/sKit/bin/sKit-tweaks /usr/local/bin
+    sudo echo "usr/local/bin/sKit-tweaks" >> $ftlst
 }
 
 
@@ -323,9 +306,9 @@ select_ext_repo() {
 }
 
 
-download_extensions() {
+install_sKit_extensions() {
 
-    echo -e "\tdownloading extensions"
+    echo -e "\tinstalling sKit related extensions"
     start=$(date +%s)
     for ext in $EXTENSIONS; do
 
@@ -339,9 +322,9 @@ download_extensions() {
 
     done
 
-    end=$(date +%s)
-    total=$((end-start))
-    duration=$(printf '%dm:%ds\n' $(($total%3600/60)) $(($total%60)))
+    #end=$(date +%s)
+    #total=$((end-start))
+    #duration=$(printf '%dm:%ds\n' $(($total%3600/60)) $(($total%60)))
  
                         
     if [[ "$FAILED" == "true" ]]; then
@@ -365,14 +348,26 @@ download_extensions() {
         exit 1
     fi
 
-   echo -e "\t   DL-duration: $duration"
+    #echo -e "\t   DL-duration: $duration"
 }
 
 
+backup_extensions() {
 
-install_sKit() {
+    if [[ ! -f $sKitbase/$EXT_BA ]]; then
 
-    echo -e "\tsKit $1"
+        echo -e "\tbacking up pre-installation extensions"
+        cd $TCE
+        tar czf $EXT_BA onboot.lst ./optional
+        mv $EXT_BA $sKitbase
+
+    fi
+}
+
+
+sKit_package() {
+
+    echo -e "\tsKit package $1"
 
     for i in $sKit; do
 
@@ -390,15 +385,176 @@ install_sKit() {
 }
 
 
+enable_governor_mod() {
+
+    echo -e "\tconfiguring CPU governor"
+    echo -t "\t  >> performance"
+    sed -i 's/CPUGOVERNOR.*/CPUGOVERNOR="performance"/g' $pcpcfg
+}
+
+
+enable_hdmi_mod() {
+
+    echo -e "\tdisabling HDMI power"
+    sed -i 's/HDMIPOWER.*/HDMIPOWER="off"/g' $pcpcfg
+}
+
+
+enable_webcontrols_mod() {
+
+    echo -e "\tdisabling LMS and SL web-controls"
+    sed -i 's/LMSCONTROLS.*/LMSCONTROLS="no"/g' $pcpcfg
+    sed -i 's/PLAYERTABS.*/PLAYERTABS="no"/g' $pcpcfg
+}
+
+
+####################################################################
+### removal
+
+mount_boot() {
+
+    echo -e "\tmounting boot partition"
+    echo
+    if [[ ! -d $BOOT_MNT ]]; then 
+
+        sudo mkdir -p $BOOT_MNT
+
+    fi
+    if grep -q "$BOOT_DEV" /proc/mounts; then
+    
+        sudo umount -f "$BOOT_DEV"
+
+    fi
+    sudo mount $BOOT_DEV $BOOT_MNT || out "mounting boot"
+    sleep 1
+}
+ 
+
+remove_profile() {
+
+    echo -e "\tremoving sKit shell profile"
+    sudo rm /etc/profile.d/sKit-profile.sh
+    sudo sed -i "/sKit-profile/d " $ftlst
+}
+
+
+remove_sKit_base() {
+
+    echo -e "\tremoving sKit base"
+    rm -rf "$sKitbase"
+    sed -i "/###BOF sKit/,/###EOF sKit/d" /home/tc/.ashrc
+    REBOOT=true
+}
+
+
+remove_sKit_tweaks_mod() {
+
+    echo -e "\tremoving sKit-tweaks mod"
+    sed -i 's/^USER_COMMAND_1=.*/USER_COMMAND_1=""/g' $pcpcfg
+    sudo rm "/usr/local/bin/sKit-tweaks"
+    sudo sed -i "/sKit-tweaks/d " $ftlst
+}
+
+
+remove_led_mod() {
+
+    echo -e "\tremoving LEDs mod"
+    if grep -q "LED" $CONFIG; then
+
+       sudo sed -i "/BOF sKit/,/EOF sKit/d" $CONFIG
+    
+    fi
+}
+
+
+remove_custom_squeezelite() {
+
+    echo -e "\tremoving custom-squeezelite binary"
+    if [[ -f "$TCE/squeezelite-custom" ]]; then
+   
+        sudo rm $TCE/squeezelite*
+        sed -i 's/SQBINARY="custom"/SQBINARY="default"/' $pcpcfg
+
+    fi
+}
+
+
+remove_custom_squeezelite_settings() {
+
+    echo -e "\tremoving custom-squeezelite settings"
+    sed -i 's/^OTHER=.*/OTHER=""/g' $pcpcfg
+}
+
+
+restore_extensions() {
+
+    echo -e "\trestoring pre-sKit extensions"
+
+    if [[ -f $sKitbase/$EXT_BA ]]; then
+
+        cd $TCE
+        sudo rm -rf onboot.lst ./optional
+        mv $sKitbase/$EXT_BA .
+        tar xzf $EXT_BA
+        chmod 775 ./optional
+        chmod 664 onboot.lst ./optional/*
+        rm $TCE/$EXT_BA
+
+    else
+
+        echo -e "\t  >> no pre-sKit-extensions backup found!"
+
+    fi
+}
+
+
+remove_isolcpus_mod() {
+
+    echo -e "\tremoving cpu isolation mod"
+    sudo sed  -i 's/isolcpus[=][^ ]*//g' $BOOT_MNT/cmdline.txt
+    sed -i "s/^CPUISOL=.*/CPUISOL=\"\"/g" $pcpcfg
+}
+
+
+remove_affinity_mod() {
+
+    echo -e "\tremoving affinity mod"
+    sed -i -e 's/^SQLAFFINITY=.*/SQLAFFINITY=""/g' \
+           -e 's/^SQLOUTAFFINITY=.*/SQLOUTAFFINITY=""/g' $pcpcfg
+}
+
+
+remove_governor_mod() {
+
+    echo -e "\tremoving CPU governor mod"
+    sed -i 's/CPUGOVERNOR.*/CPUGOVERNOR="ondemand"/g' $pcpcfg
+}
+
+
+remove_hdmi_mod() {
+
+    echo -e "\tremoving HDMI power mod"
+    sed -i 's/HDMIPOWER.*/HDMIPOWER="on"/g' $pcpcfg
+}
+
+
+remove_webcontrols_mod() {
+
+    echo -e "\tremoving LMS and SL web-controls mod"
+    sed -i 's/LMSCONTROLS.*/LMSCONTROLS="yes"/g' $pcpcfg
+    sed -i 's/PLAYERTABS.*/PLAYERTABS="yes"/g' $pcpcfg
+}
+
+
+##########################################################
+
 menu() {
 
     echo
-    echo -e "\tsKit manager"
+    echo -e "\t  1  = install sKit"
+    echo -e "\t  2  = update  sKit package"
     echo
-    echo -e "\t  1  = install"
-    echo -e "\t  2  = update"
-    echo
-    echo -e "\t  3  = remove"
+    echo -e "\t  3  = remove  sKit"
     echo -e "\t  *  = cancel"
     echo
     read -t 20 -r -p "	  ? : " var
@@ -411,16 +567,19 @@ menu() {
     case $var in
  
      1)
-        if ! check_install; then
+        if ! check_sKit_install; then
         
-            set_sKitbase
-            set_log
-            install_sKit installation
-            download_extensions
-            enable_sKit_tweaks
-            set_ashrc
-            set_profile
-            
+            set_sKit_base
+            set_sKit_log
+            sKit_package installation
+            backup_extensions
+            install_sKit_extensions
+            set_sKit_ashrc
+            set_sKit_profile
+            enable_sKit_tweaks_mod
+            enable_governor_mod
+            enable_hdmi_mod
+            enable_webcontrols_mod
             REBOOT=true
 
         else
@@ -430,28 +589,41 @@ menu() {
         fi
         ;;
      2)
-        if check_install; then
+        if check_sKit_installinstall; then
 
-            set_log
-            install_sKit update
+            set_sKit_log
+            sKit_package update
             REBOOT=true
 
         else
 
             echo -e "\tsKit not yet installed"
+            REBOOT=false
 
         fi
         ;;
      3)
-        if check_install; then
+        if check_sKit_install; then
 
-            disable_sKit_tweaks
-            remove_sKit
+            mount_boot
+            remove_sKit_tweaks_mod
+            remove_led_mod
+            remove_custom_squeezelite
+            remove_custom_squeezelite_settings
+            remove_isolcpus_mod
+            remove_affinity_mod
+            remove_governor_mod
+            remove_hdmi_mod
+            remove_webcontrols_mod
             remove_profile
+            restore_extensions
+            remove_sKit_base
+            REBOOT=true
 
         else
 
             echo -e "\tsKit not yet installed"
+            REBOOT=false
 
         fi
         ;;

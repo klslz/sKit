@@ -4,7 +4,7 @@
 # custom squeezelite binary build tool for piCorePlayer
 # supporting RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-24-2021
+# Latest Update: Apr-26-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -26,7 +26,7 @@
 #
 ########################################################################
 VERSION=1.2
-sKit_VERSION=1.3
+sKit_VERSION=1.4
 
 fname="${0##*/}"
 opts="$@"
@@ -175,7 +175,7 @@ env_set() {
     REPO_PCP1="https://repo.picoreplayer.org/repo"
     REPO_PCP2="http://picoreplayer.sourceforge.net/tcz_repo"
     REPO_SL="https://github.com/klslz/squeezelite.git"
-    EXT_BA="sKit-custom-squeezelite-extensions-backup.tar.gz"
+    EXT_BA="sKit-extensions-backup.tar.gz"
     EXTENSIONS="\
 compiletc
 git
@@ -195,7 +195,7 @@ pcp-libsoxr-dev"
 
 set_log() {
 
-    echo -e "\tsetup log"
+    echo -e "\tsetting up log"
     echo >$LOG
 }
 
@@ -278,7 +278,7 @@ menu() {
     echo
     echo -e "\t  1  = standard   - minimal"
     echo -e "\t  2  = standard   - DSD & SRC"
-    echo -e "\t  3  = soundcheck - minimal"
+    echo -e "\t  3  = soundcheck - minimal (default)"
     echo -e "\t  4  = soundcheck - DSD & SRC"
     echo -e "\t  5  = soundcheck - DSD & SRC (MP)"
     echo
@@ -286,6 +286,7 @@ menu() {
     echo -e "\t  *  = cancel"
     echo
     read -t 20 -r -p "	  ? : " x
+    x=${x:-3}
     echo
     line
 
@@ -477,7 +478,7 @@ mount_boot() {
 
 set_isolcpus() {
 
-    echo -e "\tsetting cpu isolation"
+    echo -e "\tconfiguring cpu isolation"
     sed -i "s/^CPUISOL=.*/CPUISOL=\"$ISOLCPUS\"/g" $pcpcfg
     if grep -q "isolcpus" $BOOT_MNT/cmdline.txt; then
    
@@ -495,7 +496,7 @@ set_isolcpus() {
 
 set_affinity() {
 
-    echo -e "\tsetting task affinities"
+    echo -e "\tconfiguring CPU affinities"
     sed -i -e 's/^SQLAFFINITY=.*/SQLAFFINITY="1,2"/g' \
            -e 's/^SQLOUTAFFINITY=.*/SQLOUTAFFINITY=""/g' $pcpcfg
 
@@ -534,6 +535,8 @@ INSTALL() {
     REBOOT=true
 }
 
+##########################################################
+###removal
 
 remove_squeezelite() {
 

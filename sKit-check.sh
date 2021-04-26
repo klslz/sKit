@@ -4,7 +4,7 @@
 # checks the tuning status 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-24-2021
+# Latest Update: Apr-26-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -27,7 +27,7 @@
 #
 ########################################################################
 VERSION=1.3
-sKit_VERSION=1.3
+sKit_VERSION=1.4
 
 fname="${0##*/}"
 opts="$@"
@@ -252,14 +252,6 @@ check_cpuclock() {
     fi
 }
 
-
-check_forcecpu() {
-
-    echo -en "\tforced CPU clock\t"
-    grep -q -i "force_turbo=1" $CONFIG && GREEN "enabled" || RED "disabled" 
-}
-
-
 check_governor() {
 
     echo -en "\tCPU governor\t\t"
@@ -270,6 +262,25 @@ check_governor() {
         RED "$gov"
     fi
 }
+
+
+check_forcecpu() {
+
+    cpu_clock=$(( $(sudo vcgencmd measure_clock arm | cut -d '=' -f 2) / 1000000 ))
+    gov="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
+    ftu="$(grep -i "^force_turbo=1" $CONFIG)"
+
+    echo -en "\tforced CPU clock\t"
+    if [[ -z "$ftu"  ]] && [[ "$gov" == "performance" ]]; then
+       YELLOW "disabled"
+    elif [[ ! -z "$ftu" ]]; then
+       GREEN "enabled"
+    else
+       RED "disabled"
+    fi
+}
+
+
 
 check_custom_squeezelite() {
 

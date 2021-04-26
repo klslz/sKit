@@ -4,7 +4,7 @@
 # restores backups while is pCP booted
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-24-2021
+# Latest Update: Apr-26-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -27,7 +27,7 @@
 #
 ########################################################################
 VERSION=1.1-beta1
-sKit_VERSION=1.3
+sKit_VERSION=1.4
 
 fname="${0##*/}"
 opts="$@"

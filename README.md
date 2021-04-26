@@ -1,4 +1,4 @@
-# soundcheck's tuning kit  (sKit)  1.3   Apr-24-2021
+# soundcheck's tuning kit  (sKit)  1.4   Apr-26-2021
 
 Copyright (c) 2021 - Klaus Schulz
 
@@ -26,7 +26,10 @@ Beside that it also adds some minor things
 
 to the OS
 
+and also add some initial modifications
 
+
+It now removes the entire sKit installation.
 
 
 ### sKit-custom-squeezelite.sh
