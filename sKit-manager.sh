@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.4
+VERSION=1.5
 sKit_VERSION=1.4
 
 fname="${0##*/}"
@@ -224,6 +224,21 @@ set_sKit_log() {
 }
 
 
+check_space() {
+
+    space=$(/bin/df -m /mnt/mmcblk0p2 | tail -1 | awk '{print $4}')
+    total=$(/bin/df -m /mnt/mmcblk0p2 | tail -1 | awk '{print $2}')
+
+    echo -e "\tverifying space requirements"
+    if [[ "$space" -lt "100" ]] && [[ ! -f "$TCEO/compiletc.tcz" ]]; then
+
+        out "Not enough space (${space} of ${total}MB) on device, add at least 100MB!"
+
+    fi
+}
+
+
+
 set_sKit_base() {
 
     echo -e "\tsetting up sKit base"
@@ -358,8 +373,12 @@ backup_extensions() {
 
         echo -e "\tbacking up pre-installation extensions"
         cd $TCE
-        tar czf $EXT_BA onboot.lst ./optional
-        mv $EXT_BA $sKitbase
+        tar czf $EXT_BA onboot.lst ./optional >>$LOG 2>&1
+        if [ $? -eq 0 ]; then
+           mv $EXT_BA $sKitbase
+        else
+           echo -e "  >> problem finishing backup - have a look @ $LOG"
+        fi
 
     fi
 }
@@ -388,7 +407,7 @@ sKit_package() {
 enable_governor_mod() {
 
     echo -e "\tconfiguring CPU governor"
-    echo -t "\t  >> performance"
+    echo -e "\t  >> performance"
     sed -i 's/CPUGOVERNOR.*/CPUGOVERNOR="performance"/g' $pcpcfg
 }
 
@@ -569,6 +588,8 @@ menu() {
      1)
         if ! check_sKit_install; then
         
+            check_space
+            mount_boot
             set_sKit_base
             set_sKit_log
             sKit_package installation
@@ -584,12 +605,12 @@ menu() {
 
         else
         
-              echo -e "\tsKit already installed"
+              echo -e "\tsKit is already installed"
 
         fi
         ;;
      2)
-        if check_sKit_installinstall; then
+        if check_sKit_install; then
 
             set_sKit_log
             sKit_package update
