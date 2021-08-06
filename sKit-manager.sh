@@ -4,7 +4,7 @@
 # 
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-26-2021
+# Latest Update: Aug-06-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,8 +25,8 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.5
-sKit_VERSION=1.4
+VERSION=1.6
+sKit_VERSION=1.6
 
 fname="${0##*/}"
 opts="$@"
@@ -132,18 +132,19 @@ license() {
 
     If not, see http://www.gnu.org/licenses
     "
-    while true; do
+
+    sleep 2
+
 
         read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
         case $yn in
 
             [Yy]* ) break;;
             [Nn]* ) DONE;exit;;
-                * ) echo -e "\tPlease answer yes or no.";;
+                * ) DONE;exit;;
 
-         esac
+        esac
 
-    done
     clear
 }
 

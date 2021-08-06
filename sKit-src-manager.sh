@@ -4,7 +4,7 @@
 # provides sample rate converter presets
 # for RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-26-2021
+# Latest Update: Aug-06-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -27,7 +27,7 @@
 #
 ########################################################################
 VERSION=1.1
-sKit_VERSION=1.4
+sKit_VERSION=1.6
 
 fname="${0##*/}"
 opts="$@"
