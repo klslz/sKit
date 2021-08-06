@@ -1,4 +1,6 @@
-# soundcheck's tuning kit  (sKit)  1.4   Apr-26-2021
+# soundcheck's tuning kit  (sKit)  1.6   Aug-02-2021 
+
+TEST and Development VERSION - DON't USE IT!
 
 Copyright (c) 2021 - Klaus Schulz
 
