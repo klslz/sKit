@@ -98,7 +98,7 @@ license() {
 
 		line
 		echo "
-    soundcheck's tuning kit (${fname})
+    soundcheck's tuning kit ($fname)
     
     Copyright © 2021 - Klaus Schulz (aka soundcheck)
     All rights reserved
@@ -359,12 +359,21 @@ check_sKitrev() {
     echo -e "\tsKit revison\t\t\t$sKit_VERSION"
     echo -en "\tsKit status\t\t"
     skm="sKit-manager.sh"
+
     tskm="/tmp/$skm"
     lskm="$sKitbase/bin/$skm"
+
     wget -q "$REPO_sKit/$skm" -O "$tskm" 
-    sKit_reporev=$(grep "sKit_VER" $tskm | cut -f 2 -d "=")
-    sKit_actrev=$(grep "sKit_VER" $lskm | cut -f 2 -d "=")
-    [[ "$sKit_actrev" == "$sKit_reporev" ]] && GREEN "up-2-date" || RED "update available"
+
+    sKit_reporev=$(grep "^sKit_VER" $tskm | cut -f 2 -d "=")
+    sKit_actrev=$(grep "^sKit_VER" $lskm | cut -f 2 -d "=")
+
+    if [[ "$sKit_actrev" == "$sKit_reporev" ]]; then 
+		GREEN "up-2-date" 
+	else	
+		RED "update available"
+	fi
+	
     echo
 }
 
