@@ -65,8 +65,8 @@ check_root() {
 header() {
 
     line
-    echo -e "\t      sKit ${sKit_VERSION}- manager download"
-    echo -e "\t         (c) soundcheck"
+    echo -e "\t      sKit ${sKit_VERSION} - download"
+    echo -e "\t           (c) soundcheck"
     echo
     echo -e "\t       welcome $(id -un)@$(hostname)"
     line
@@ -93,7 +93,7 @@ env_set() {
 
     BINDIR=/usr/local/bin
     BIN=sKit-manager.sh 
-    PERM_BIN="775"
+    PERM_BIN="755"
     REPO_sKit="https://raw.githubusercontent.com/klslz/sKit/master"
     TIMEOUT=120
 }

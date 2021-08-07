@@ -111,8 +111,7 @@ reboot_system() {
 
 license() {
 
-	if [[ ! -f $license_accept_flag ]]; do
-
+	if [[ ! -f $license_accept_flag ]]; then
 		line
 		echo "
     soundcheck's tuning kit (${fname})
