@@ -66,7 +66,7 @@ checkroot() {
 header() {
 
     line
-    echo -e "\t      sKit $(sKit_VERSION)- manager ($VERSION)"
+    echo -e "\t      sKit (${sKit_VERSION}) - manager ($VERSION)"
     echo -e "\t            (c) soundcheck"
     echo
     echo -e "\t         welcome $(id -un)@$(hostname)"
@@ -563,6 +563,12 @@ remove_webcontrols_mod() {
 }
 
 
+remove_license_accept_flag() {
+	
+	rm $license_accept_flag
+}
+
+
 ##########################################################
 
 menu() {
@@ -637,6 +643,7 @@ menu() {
             remove_profile
             restore_extensions
             remove_sKit_base
+			remove_license_accept_flag
             REBOOT=true
 
         else
