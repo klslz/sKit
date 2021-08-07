@@ -103,7 +103,7 @@ download() {
 
     echo -e "\tdownloading $BIN"
 	url="$REPO_sKit/$BIN"
-	timeout $TIMEOUT wget -q "$url" -O $BINDIR/$BIN || out "downloading binary"
+	timeout $TIMEOUT sudo wget -q "$url" -O $BINDIR/$BIN || out "downloading binary"
 	chmod $PERM_BIN $BINDIR/$BIN
 }
 
@@ -113,7 +113,6 @@ colors
 
 env_set
 header
-check_root
 check_pcp
 download
 
