@@ -103,8 +103,8 @@ download() {
 
     echo -e "\tdownloading $BIN"
 	url="$REPO_sKit/$BIN"
-	timeout $TIMEOUT sudo wget -q "$url" -O $BINDIR/$BIN || out "downloading binary"
-	chmod $PERM_BIN $BINDIR/$BIN
+	timeout $TIMEOUT sudo wget -q "$url" -O $BINDIR/$BIN 2>/dev/null || out "downloading binary"
+	sudo chmod $PERM_BIN $BINDIR/$BIN
 }
 
 
