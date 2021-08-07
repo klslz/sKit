@@ -66,7 +66,7 @@ checkroot() {
 header() {
 
     line
-    echo -e "\t      sKit (${sKit_VERSION}) - manager ($VERSION)"
+    echo -e "\t      sKit ($sKit_VERSION) - manager ($VERSION)"
     echo -e "\t            (c) soundcheck"
     echo
     echo -e "\t         welcome $(id -un)@$(hostname)"
