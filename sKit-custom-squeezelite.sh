@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.2
+VERSION=1.3
 sKit_VERSION=1.5
 
 fname="${0##*/}"
@@ -122,9 +122,11 @@ check_pcp() {
 
 license() {
 
-    line
-    echo "
-    soundcheck's tuning kit (${fname})
+	if [[ ! -f $license_accept_flag ]]; then
+
+		line
+		echo "
+    soundcheck's tuning kit ($fname)
     
     Copyright © 2021 - Klaus Schulz (aka soundcheck)
     All rights reserved
@@ -144,20 +146,21 @@ license() {
 
     If not, see http://www.gnu.org/licenses
     "
-    line
-    while true; do
 
-        read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
-        case $yn in
 
-            [Yy]* ) break;;
-            [Nn]* ) DONE;exit;;
-                * ) echo -e "\tPlease answer yes or no.";;
+		while true; do
 
-         esac
+			read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
+			case $yn in
 
-    done
-    clear
+				[Yy]* ) touch $license_accept_flag; break;;
+				    * ) DONE;exit;;
+
+			esac
+
+		done
+		clear
+	fi
 }
 
 
