@@ -1,4 +1,4 @@
-# soundcheck's tuning kit  (sKit)  1.4   Apr-26-2021
+# soundcheck's tuning kit  (sKit)  1.5   Aug-07-2021
 
 Copyright (c) 2021 - Klaus Schulz
 
@@ -10,40 +10,40 @@ audio processing.
 sKit is supporting RPi4 and related CM modules and 32-bit as well
 as 64-bit pCP versions.
 
-sKit-pCP is a spin-off of the "The Audio Streaming Series"  over 
+sKit for pCP is a spin-off of the "The Audio Streaming Series"  over 
 
 @ my blog: https://soundcheck-audio.blogspot.com 
 
 
-The idea behind sKit was to make all my suggested tuning measures much 
+The idea behind sKit was to make most of my suggested tuning measures much 
 easier to apply.
 
 
-### sKit-manager
+### sKit-manager.sh
 
 The tool allows to install, update and remove sKit.
 
-During installation, sKit manager  
+The "install" function  
 
+  * downloads the toolbox 
   * sets up the sKit file structure and environment
-  * installs a new advanced "ps" command
-  * a new ps alias
-  * adds some initial modifications
+  * installs some pCP packages
+  * changes the enviroment
+  * adds some initial modifications and optimizations
 
-The update downloads and installs the updated
-git data.
+The "update" function downloads and installs the updated
+sKit toolbox directly from the git repositoriy.
 
-
-The removal function should provide a pCP installation without a trace
-of sKit.
+The "removal" function removes sKit without a trace.
 
 
 ### sKit-custom-squeezelite.sh
 
 This tool offers, builds and installs different customized 
-and optimized variants of squeezelite based on the squeezelite
-repo you'll find on this site.
-And it also configures squeezelite in line with my recommendations.
+and optimized variants of squeezelite based on my own 
+squeezelite fork, which you can also find on this site.
+
+It further configures squeezelite in line with my recommendations.
 
 
 ### sKit-led-manager.sh
@@ -62,19 +62,19 @@ for squeezelite.
 
 ### sKit-tweaks
 
-This tool runs activates pCP related efficiency tweaks during the boot process.
-The first batch of mods will be applied after 20 seconds the 2nd more agressive
-batch will be launched after 180 seconds.
-The default configuration of the tool is to get autostarted at system boot. 
-It can to be enabled or disabled via the pCP-WEB-UI under custom commands..
+This tool applies efficiency measures during the boot process.
+The first batch of measures will be applied after 20 seconds, 
+the 2nd more agressive batch will be launched after 180 seconds.
+The default configuration of the tool is to get autostarted 20s after system boot. 
+It can easily be enabled or disabled via the pCP-WEB-UI under custom commands.
 
 
 ### sKit-check.sh
 
-This tool checks the configuration state of pCP against 
+This tool checks the configuration state of your pCP installation against 
 
 * sKit enabled configs and tweaks 
-* and some of the recommendations made in my Audio Streaming series blog. 
+* and some of the recommendations made in my "Audio Streaming Series". 
 
 
 As OPTION:
