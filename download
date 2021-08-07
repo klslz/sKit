@@ -1,0 +1,122 @@
+#!/bin/sh
+#
+# soundcheck's tuning kit - pCP  - download sKit manager
+# 
+# for RPi4 and related CM modules
+#
+# Latest Update: Aug-07-2021
+#
+# Copyright © 2021 - Klaus Schulz
+# All rights reserved
+# 
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation, 
+# either version 3 of the License, or (at your option) 
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, 
+# but WITHOUT ANY WARRANTY; without even the implied warranty 
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# See the GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License 
+# along with this program. 
+#
+# If not, see http://www.gnu.org/licenses
+#
+########################################################################
+VERSION=1.0
+sKit_VERSION=1.5
+
+fname="${0##*/}"
+opts="$@"
+
+###functions############################################################
+colors() {
+
+    RED='\033[0;31m'
+    GREEN="\033[0;32m"
+    YELLOW="\033[0;33m" 
+    NC='\033[0m'
+}
+
+
+out() {
+
+    echo -e "\tprogram aborted"
+    echo -e "\t${RED}ERROR: $@ ${NC}"
+    DONE
+    exit 1
+}
+
+
+line() {
+
+    echo -e "${RED}_______________________________________________________________${NC}\n"
+}
+
+
+check_root() {
+
+    (( EUID != 0 )) && out "root privileges required"
+}
+
+
+header() {
+
+    line
+    echo -e "\t      sKit ${sKit_VERSION}- manager download"
+    echo -e "\t         (c) soundcheck"
+    echo
+    echo -e "\t       welcome $(id -un)@$(hostname)"
+    line
+}
+
+
+DONE() {
+
+    line
+}
+
+
+check_pcp() {
+
+    if ! uname -a | grep -q -i pcp; then 
+    
+       out "No piCorePlayer system"
+       
+    fi
+}
+
+
+env_set() {
+
+    BINDIR=/usr/local/bin
+    BIN=sKit-manager.sh 
+    PERM_BIN="775"
+    REPO_sKit="https://raw.githubusercontent.com/klslz/sKit/master"
+    TIMEOUT=120
+}
+
+
+download() {
+
+    echo -e "\tdownloading $BIN"
+	url="$REPO_sKit/$BIN"
+	timeout $TIMEOUT wget -q "$url" -O $BINDIR/$BIN || out "downloading binary"
+	chmod $PERM_BIN $BINDIR/$BIN
+}
+
+
+###main#######################################
+colors
+
+env_set
+header
+check_root
+check_pcp
+download
+
+DONE
+exit 0
+##############################################

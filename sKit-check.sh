@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# soundcheck's tuning kit - pCP - sKit-checker.sh
+# soundcheck's tuning kit - pCP - sKit-check.sh
 # checks the tuning status 
-# for RPi3 and RPi4 and related CM modules
+# for RPi4 and related CM modules
 #
-# Latest Update: Apr-26-2021
+# Latest Update: Aug-07-2021
 #
 #
 # Copyright © 2021 - Klaus Schulz
@@ -26,11 +26,12 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.3
-sKit_VERSION=1.4
+VERSION=1.4
+sKit_VERSION=1.5
 
 fname="${0##*/}"
 opts="$@"
+license_accept_flag=/mnt/mmcblk0p2/tce/.sKit-license-accepted.flag
 
 ###functions############################################################
 colors() {
@@ -93,8 +94,10 @@ check_pcp() {
 
 license() {
 
-    line
-    echo "
+	if [[ ! -f $license_accept_flag ]]; do
+
+		line
+		echo "
     soundcheck's tuning kit (${fname})
     
     Copyright © 2021 - Klaus Schulz (aka soundcheck)
@@ -115,20 +118,21 @@ license() {
 
     If not, see http://www.gnu.org/licenses
     "
-    line
-    while true; do
 
-        read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
-        case $yn in
 
-            [Yy]* ) break;;
-            [Nn]* ) DONE;exit;;
-                * ) echo -e "\tPlease answer yes or no.";;
+		while true; do
 
-         esac
+			read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
+			case $yn in
 
-    done
-    clear
+				[Yy]* ) touch $license_accept_flag; break;;
+				    * ) DONE;exit;;
+
+			esac
+
+		done
+		clear
+	fi
 }
 
 
@@ -143,7 +147,7 @@ env_set() {
     CONFIG=$BOOT_MNT/config.txt
     CMDLINE=$BOOT_MNT/cmdline.txt
     pcpcfg=/usr/local/etc/pcp/pcp.cfg
-    REPO_sKit="https://raw.githubusercontent.com/klslz/tuningkitpcp/master"
+    REPO_sKit="https://raw.githubusercontent.com/klslz/sKit/master"
 }
 
 

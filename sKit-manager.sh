@@ -2,9 +2,9 @@
 #
 # soundcheck's tuning kit - pCP  - sKit-manager.sh
 # 
-# for RPi3 and RPi4 and related CM modules
+# for RPi4 and related CM modules
 #
-# Latest Update: Apr-26-2021
+# Latest Update: Aug-07-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,11 +25,12 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.5
-sKit_VERSION=1.4
+VERSION=1.6
+sKit_VERSION=1.5
 
 fname="${0##*/}"
 opts="$@"
+license_accept_flag=/mnt/mmcblk0p2/tce/.sKit-license-accepted.flag
 
 ###functions############################################################
 colors() {
@@ -65,10 +66,10 @@ checkroot() {
 header() {
 
     line
-    echo -e "\t      sKit - manager ($VERSION)"
-    echo -e "\t         (c) soundcheck"
+    echo -e "\t      sKit $(sKit_VERSION)- manager ($VERSION)"
+    echo -e "\t            (c) soundcheck"
     echo
-    echo -e "\t       welcome $(id -un)@$(hostname)"
+    echo -e "\t         welcome $(id -un)@$(hostname)"
     line
 }
 
@@ -110,8 +111,10 @@ reboot_system() {
 
 license() {
 
-    line
-    echo "
+	if [[ ! -f $license_accept_flag ]]; do
+
+		line
+		echo "
     soundcheck's tuning kit (${fname})
     
     Copyright © 2021 - Klaus Schulz (aka soundcheck)
@@ -132,19 +135,21 @@ license() {
 
     If not, see http://www.gnu.org/licenses
     "
-    while true; do
 
-        read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
-        case $yn in
 
-            [Yy]* ) break;;
-            [Nn]* ) DONE;exit;;
-                * ) echo -e "\tPlease answer yes or no.";;
+		while true; do
 
-         esac
+			read -t 120 -r -p "    Confirm terms? (y/n)  : " yn
+			case $yn in
 
-    done
-    clear
+				[Yy]* ) touch $license_accept_flag; break;;
+				    * ) DONE;exit;;
+
+			esac
+
+		done
+		clear
+	fi
 }
 
 
@@ -188,7 +193,7 @@ env_set() {
     REPO_PCP1="https://repo.picoreplayer.org/repo"
     REPO_PCP2="http://picoreplayer.sourceforge.net/tcz_repo"
     REPO_PCP="$REPO_PCP1"
-    REPO_sKit="https://raw.githubusercontent.com/klslz/tuningkitpcp/master"
+    REPO_sKit="https://raw.githubusercontent.com/klslz/sKit/master"
     TIMEOUT=120
 
     sKit="sKit-manager.sh sKit-custom-squeezelite.sh sKit-led-manager.sh sKit-tweaks sKit-src-manager.sh sKit-restore.sh sKit-check.sh"
@@ -337,10 +342,6 @@ install_sKit_extensions() {
 
     done
 
-    #end=$(date +%s)
-    #total=$((end-start))
-    #duration=$(printf '%dm:%ds\n' $(($total%3600/60)) $(($total%60)))
- 
                         
     if [[ "$FAILED" == "true" ]]; then
 
@@ -362,8 +363,6 @@ install_sKit_extensions() {
         reboot_system
         exit 1
     fi
-
-    #echo -e "\t   DL-duration: $duration"
 }
 
 

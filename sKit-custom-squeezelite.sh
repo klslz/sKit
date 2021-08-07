@@ -4,7 +4,7 @@
 # custom squeezelite binary build tool for piCorePlayer
 # supporting RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Apr-26-2021
+# Latest Update: Aug-07-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -26,7 +26,7 @@
 #
 ########################################################################
 VERSION=1.2
-sKit_VERSION=1.4
+sKit_VERSION=1.5
 
 fname="${0##*/}"
 opts="$@"
