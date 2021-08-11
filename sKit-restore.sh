@@ -31,6 +31,8 @@ sKit_VERSION=1.5
 
 fname="${0##*/}"
 opts="$@"
+license_accept_flag=/mnt/mmcblk0p2/tce/.sKit-license-accepted.flag
+
 
 ###functions############################################################
 colors() {
