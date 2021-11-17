@@ -4,7 +4,7 @@
 # custom squeezelite binary build tool for piCorePlayer
 # supporting RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Aug-07-2021
+# Latest Update: Nov-16-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.3
+VERSION=1.4
 sKit_VERSION=1.5
 
 fname="${0##*/}"
@@ -53,8 +53,10 @@ out() {
 
 line() {
 
-    echo -e "${RED}_______________________________________________________________${NC}\n"
+    printf "${RED}%*s${NC}\n" 80 "" | tr ' ' _
+    echo
 }
+
 
 
 checkroot() {
@@ -173,15 +175,265 @@ env_set() {
     sKitbase=$TCE/sKit
     LOGDIR=$sKitbase/log
     LOG=$LOGDIR/$fname.log
+    DOWNLOAD_DIR="/tmp/ext"
+    TARGET_DIR="$TCEO"
     pcpcfg=/usr/local/etc/pcp/pcp.cfg
     BOOT_MNT=/mnt/mmcblk0p1
     BOOT_DEV=/dev/mmcblk0p1
-    REPO_PCP1="https://repo.picoreplayer.org/repo"
-    REPO_PCP2="http://picoreplayer.sourceforge.net/tcz_repo"
+    ARCH="$(uname -m)"
+    SITE1="https://repo.picoreplayer.org"
+    REPO1="${SITE1}/repo/13.x/$ARCH/tcz"
+    SITE2="http://picoreplayer.sourceforge.net"
+    REPO2="${SITE2}/tcz_repo/13.x/$ARCH/tcz"
     REPO_SL="https://github.com/klslz/squeezelite.git"
     EXT_BA="sKit-extensions-backup.tar.gz"
-    EXTENSIONS="\
-compiletc
+    EXTENSIONS="
+binutils.tcz
+binutils.tcz.dep
+binutils.tcz.dep.pcp
+binutils.tcz.info
+binutils.tcz.md5.txt
+binutils.tcz.tree
+bison.tcz
+bison.tcz.dep.pcp
+bison.tcz.info
+bison.tcz.md5.txt
+bzip2-lib.tcz
+bzip2-lib.tcz.dep.pcp
+bzip2-lib.tcz.info
+bzip2-lib.tcz.md5.txt
+curl.tcz
+curl.tcz.dep
+curl.tcz.dep.pcp
+curl.tcz.info
+curl.tcz.md5.txt
+curl.tcz.tree
+diffutils.tcz
+diffutils.tcz.dep.pcp
+diffutils.tcz.info
+diffutils.tcz.md5.txt
+e2fsprogs_base-dev.tcz
+e2fsprogs_base-dev.tcz.dep.pcp
+e2fsprogs_base-dev.tcz.info
+e2fsprogs_base-dev.tcz.md5.txt
+expat2.tcz
+expat2.tcz.dep.pcp
+expat2.tcz.info
+expat2.tcz.md5.txt
+file.tcz
+file.tcz.dep.pcp
+file.tcz.info
+file.tcz.md5.txt
+findutils.tcz
+findutils.tcz.dep.pcp
+findutils.tcz.info
+findutils.tcz.md5.txt
+flex.tcz
+flex.tcz.dep.pcp
+flex.tcz.info
+flex.tcz.md5.txt
+gamin.tcz
+gamin.tcz.dep.pcp
+gamin.tcz.info
+gamin.tcz.md5.txt
+gawk.tcz
+gawk.tcz.dep
+gawk.tcz.dep.pcp
+gawk.tcz.info
+gawk.tcz.md5.txt
+gawk.tcz.tree
+gcc_base-dev.tcz
+gcc_base-dev.tcz.dep.pcp
+gcc_base-dev.tcz.info
+gcc_base-dev.tcz.md5.txt
+gcc_libs-dev.tcz
+gcc_libs-dev.tcz.dep
+gcc_libs-dev.tcz.dep.pcp
+gcc_libs-dev.tcz.info
+gcc_libs-dev.tcz.md5.txt
+gcc_libs-dev.tcz.tree
+gcc_libs.tcz
+gcc_libs.tcz.dep.pcp
+gcc_libs.tcz.info
+gcc_libs.tcz.md5.txt
+gcc.tcz
+gcc.tcz.dep.pcp
+gcc.tcz.info
+gcc.tcz.md5.txt
+git.tcz
+git.tcz.dep
+git.tcz.dep.pcp
+git.tcz.info
+git.tcz.md5.txt
+git.tcz.tree
+glib2.tcz
+glib2.tcz.dep
+glib2.tcz.dep.pcp
+glib2.tcz.info
+glib2.tcz.md5.txt
+glib2.tcz.tree
+glibc_add_lib.tcz
+glibc_add_lib.tcz.dep.pcp
+glibc_add_lib.tcz.info
+glibc_add_lib.tcz.md5.txt
+glibc_apps.tcz
+glibc_apps.tcz.dep.pcp
+glibc_apps.tcz.info
+glibc_apps.tcz.md5.txt
+glibc_base-dev.tcz
+glibc_base-dev.tcz.dep.pcp
+glibc_base-dev.tcz.info
+glibc_base-dev.tcz.md5.txt
+glibc_gconv.tcz
+glibc_gconv.tcz.dep.pcp
+glibc_gconv.tcz.info
+glibc_gconv.tcz.md5.txt
+gmp.tcz
+gmp.tcz.dep.pcp
+gmp.tcz.info
+gmp.tcz.md5.txt
+grep.tcz
+grep.tcz.dep
+grep.tcz.dep.pcp
+grep.tcz.info
+grep.tcz.md5.txt
+grep.tcz.tree
+isl.tcz
+isl.tcz.dep
+isl.tcz.dep.pcp
+isl.tcz.info
+isl.tcz.md5.txt
+isl.tcz.tree
+libasound-dev.tcz
+libasound-dev.tcz.dep
+libasound-dev.tcz.dep.pcp
+libasound-dev.tcz.info
+libasound-dev.tcz.md5.txt
+libasound-dev.tcz.tree
+libelf.tcz
+libelf.tcz.dep.pcp
+libelf.tcz.info
+libelf.tcz.md5.txt
+libffi_base-dev.tcz
+libffi_base-dev.tcz.dep.pcp
+libffi_base-dev.tcz.info
+libffi_base-dev.tcz.md5.txt
+linux-5.10.y_api_headers.tcz
+linux-5.10.y_api_headers.tcz.dep.pcp
+linux-5.10.y_api_headers.tcz.info
+linux-5.10.y_api_headers.tcz.md5.txt
+m4.tcz
+m4.tcz.dep.pcp
+m4.tcz.info
+m4.tcz.md5.txt
+make.tcz
+make.tcz.dep.pcp
+make.tcz.info
+make.tcz.md5.txt
+mpc.tcz
+mpc.tcz.dep
+mpc.tcz.dep.pcp
+mpc.tcz.info
+mpc.tcz.md5.txt
+mpc.tcz.tree
+mpfr.tcz
+mpfr.tcz.dep
+mpfr.tcz.dep.pcp
+mpfr.tcz.info
+mpfr.tcz.md5.txt
+mpfr.tcz.tree
+patch.tcz
+patch.tcz.dep.pcp
+patch.tcz.info
+patch.tcz.md5.txt
+pcp-libalac-dev.tcz
+pcp-libalac-dev.tcz.dep
+pcp-libalac-dev.tcz.dep.pcp
+pcp-libalac-dev.tcz.info
+pcp-libalac-dev.tcz.md5.txt
+pcp-libalac-dev.tcz.tree
+pcp-libfaad2-dev.tcz
+pcp-libfaad2-dev.tcz.dep
+pcp-libfaad2-dev.tcz.dep.pcp
+pcp-libfaad2-dev.tcz.info
+pcp-libfaad2-dev.tcz.md5.txt
+pcp-libfaad2-dev.tcz.tree
+pcp-libflac-dev.tcz
+pcp-libflac-dev.tcz.dep
+pcp-libflac-dev.tcz.dep.pcp
+pcp-libflac-dev.tcz.info
+pcp-libflac-dev.tcz.md5.txt
+pcp-libflac-dev.tcz.tree
+pcp-libmad-dev.tcz
+pcp-libmad-dev.tcz.dep
+pcp-libmad-dev.tcz.dep.pcp
+pcp-libmad-dev.tcz.info
+pcp-libmad-dev.tcz.md5.txt
+pcp-libmad-dev.tcz.tree
+pcp-libmpg123-dev.tcz
+pcp-libmpg123-dev.tcz.dep
+pcp-libmpg123-dev.tcz.dep.pcp
+pcp-libmpg123-dev.tcz.info
+pcp-libmpg123-dev.tcz.md5.txt
+pcp-libmpg123-dev.tcz.tree
+pcp-libogg-dev.tcz
+pcp-libogg-dev.tcz.dep
+pcp-libogg-dev.tcz.dep.pcp
+pcp-libogg-dev.tcz.info
+pcp-libogg-dev.tcz.md5.txt
+pcp-libogg-dev.tcz.tree
+pcp-libsoxr-dev.tcz
+pcp-libsoxr-dev.tcz.dep
+pcp-libsoxr-dev.tcz.dep.pcp
+pcp-libsoxr-dev.tcz.info
+pcp-libsoxr-dev.tcz.md5.txt
+pcp-libsoxr-dev.tcz.tree
+pcp-libvorbis-dev.tcz
+pcp-libvorbis-dev.tcz.dep
+pcp-libvorbis-dev.tcz.dep.pcp
+pcp-libvorbis-dev.tcz.info
+pcp-libvorbis-dev.tcz.md5.txt
+pcp-libvorbis-dev.tcz.tree
+pcre.tcz
+pcre.tcz.dep
+pcre.tcz.dep.pcp
+pcre.tcz.info
+pcre.tcz.md5.txt
+pcre.tcz.tree
+pkg-config.tcz
+pkg-config.tcz.dep
+pkg-config.tcz.dep.pcp
+pkg-config.tcz.info
+pkg-config.tcz.md5.txt
+pkg-config.tcz.tree
+sed.tcz
+sed.tcz.dep.pcp
+sed.tcz.info
+sed.tcz.md5.txt
+util-linux_base-dev.tcz
+util-linux_base-dev.tcz.dep.pcp
+util-linux_base-dev.tcz.info
+util-linux_base-dev.tcz.md5.txt
+zlib_base-dev.tcz
+zlib_base-dev.tcz.dep.pcp
+zlib_base-dev.tcz.info
+zlib_base-dev.tcz.md5.txt"
+ 
+    EXTENSIONS_LOAD="gcc_libs
+gcc
+gcc_base-dev
+gcc_libs-dev
+glibc_base-dev
+glibc_add_lib
+glibc_apps
+glibc_gconv
+isl
+mpc
+linux-5.10.y_api_headers
+binutils
+make
+sed
+grep
 git
 libasound-dev
 pcp-libogg-dev
@@ -191,9 +443,13 @@ pcp-libmad-dev
 pcp-libmpg123-dev
 pcp-libalac-dev
 pcp-libfaad2-dev
-pcp-libsoxr-dev" 
+pcp-libsoxr-dev"
+
     BASE=/tmp/squeezelite
     ISOLCPUS="3"
+
+	test -d $DOWNLOAD_DIR || mkdir -p $DOWNLOAD_DIR
+	rm ${DOWNLOAD_DIR}/*tcz* 2>/dev/null
 }
 
 
@@ -220,13 +476,12 @@ select_ext_repo() {
     read -t 15 -r -p "	   ?  " x
     x=${x:-1}
     echo
-    echo -e "\trepository"
 
     case "$x" in
     
-        1) REPO_PCP=$REPO_PCP1; echo -e "\t   master >> $REPO_PCP"; TIMEOUT=300;;
-        2) REPO_PCP=$REPO_PCP2; echo -e "\t   mirror >> $REPO_PCP"; TIMEOUT=600;;
-        *) REPO_PCP=$REPO_PCP1; echo -e "\t   master >> $REPO_PCP"; TIMEOUT=300;;
+        1) REPO=$REPO1 ; TIMEOUT=400;;
+        2) REPO=$REPO2 ; TIMEOUT=600;;
+        *) REPO=$REPO1 ; TIMEOUT=400;;
  
     esac
 }
@@ -253,23 +508,7 @@ backup_extensions() {
         echo -e "\tbacking up pre-installation extensions"
         cd $TCE
         tar czf $EXT_BA onboot.lst ./optional
-        mv $EXT_BA $sKitbase
-
-    fi
-}
-
-
-
-verify_extension() {
-
-    if [[ ! -f "$TCEO/${1}.tcz" ]]; then
-
-        echo -e "\t  >> download failed - $1 "
-        return 1
-      
-    else
-   
-        return 0
+        cp -f $EXT_BA $sKitbase
 
     fi
 }
@@ -338,54 +577,145 @@ menu() {
 
 download_extensions() {
 
-    echo -e "\tdownloading extensions (~3min master, ~5min mirror - for initial DL)"
+
+    echo -e "\textensions download"
+    echo
+    echo -e "\t  repo: $REPO"
+    echo
     start=$(date +%s)
-    for ext in $EXTENSIONS; do
 
-        timeout $TIMEOUT pcp-load -r $REPO_PCP -w "$ext" >>$LOG 2>&1
-        if [[ $? -ne 0 ]] || grep -q -i "FAILED" $LOG; then
+	test -f /tmp/skit-dl.failed && rm /tmp/skit-dl.failed
+	touch   /tmp/skit-dl.failed
 
-            FAILED=true
-            break
+	for ex in $EXTENSIONS; do
 
-        fi
+		if [[ ! -f $TARGET_DIR/$ex ]]; then 
+			if [[ ! -f $DOWNLOAD_DIR/$ex ]]; then
 
-    done
+				printf "\t%-18s%-38s" "downloading:" "$ex"
+
+				DOWNLOAD_INITIATED=true 
+
+				wget -P "$DOWNLOAD_DIR" ${REPO}/$ex >>$LOG 2>&1
+
+				if [ $? -eq 0 ]; then
+
+					stat="DOWNLOADED"
+					DOWNLOAD_SUCCESS=true
+
+				else
+
+					stat="FAILED"
+					echo "$ex" >> /tmp/skit-dl.failed
+				fi
+
+				if [[ "$stat" == "DOWNLOADED" ]]; then
+					printf "${GREEN}%-15s${NC}\n" "$stat"
+				else
+					printf "${RED}%-15s${NC}\n" "$stat"
+				fi
+
+			fi
+		fi
+
+
+	done
 
     end=$(date +%s)
     total=$((end-start))
     duration=$(printf '%dm:%ds\n' $(($total%3600/60)) $(($total%60)))
- 
-                        
-    if [[ "$FAILED" == "true" ]]; then
+	if [[ "$DOWNLOAD_INITIATED" == "true" ]]; then
+			echo
+			echo -e "\tdownload-duration: $duration"
+	else
+			echo
+			echo -e "\tall required extentions already installed"
+	fi
+}
 
-        echo
-        echo -e "\t${RED}ERROR: serious issue while downloading extensions${NC}"
-        echo -e "\t${RED}ERROR: prior status will be restored${NC}"
-        echo -e "\t${RED}ERROR: please try once more later or use a different repo server${NC}"
-        echo -e "\t${RED}ERROR: you could also have look @ ${NC}"
-        echo -e "\t${RED}ERROR:   >> $LOG${NC}"
-        grep -i "FAILED" $LOG | while IFS= read i; do 
 
-                                  echo -e "\t${RED}ERROR:   >> $i${NC}\n" 
+verify_extensions() {
 
-                                done
-        echo
-        restore_extensions
-        REBOOT=true
-        DONE
-        reboot_system
-        exit 1
-    fi
+	echo -e "\tverifiying extension downloads"
 
-   echo -e "\t   DL-duration: $duration"
+	for i in 1 2 3 4; do
+
+        sleep 5
+        if [[ -s "/tmp/skit-dl.failed" ]]; then
+
+            echo
+            echo -e "${RED}\tERROR: extensions download (partially) failed - ${i}. RETRY ${NC}"
+            echo
+            download_extensions
+
+        fi
+	done
+
+	if [[ -s "/tmp/skit-dl.failed" ]]; then
+
+		out "download failed 5 times = severe pCP server issues - try later or a different repo"
+
+	fi
+
+	echo
+    echo -e "\textensions download successfully finished"
+
+	line 
+
+	echo -e "\textensions integrity check"
+	echo
+
+
+	for j in $DOWNLOAD_DIR/*.tcz; do
+
+
+		md5_act="$(md5sum $j | awk '{print $1}' )"
+		md5_orig="$(cat ${j}.md5.txt | awk '{print $1}')"
+
+		printf "\t%-18s%-38s" "integrity check:" "$(basename $j)" 
+
+		if [[ "$md5_orig" == "$md5_act" ]]; then
+
+			stat=PASSED
+
+		else
+
+			stat=FAILED
+			FAILED=1
+
+		fi
+
+		if [[ "$stat" == "PASSED" ]]; then
+			printf "${GREEN}%-15s${NC}\n" "$stat"
+		else
+			printf "${RED}%-15s${NC}\n" "$stat"
+		fi
+
+	done
+
+	if [[ "$FAILED" == "1" ]]; then
+
+		echo
+		echo -e "\t${RED}ERROR:   extension integrity issue detected${NC}"
+		echo -e "\t${RED}         try choosing different repo after reboot${NC}"
+		sleep 5
+		REBOOT=true
+		reboot_system
+
+	else
+
+		echo
+		echo -e "\tsaving extensions"
+		mv -f $DOWNLOAD_DIR/* $TARGET_DIR
+
+	fi
 }
 
 
 load_extensions() {
 
-    echo -e "\tloading extensions (temporary)"
-    echo "$EXTENSIONS" | while IFS= read -r ext; do
+    echo -e "\tloading extensions"
+    echo "$EXTENSIONS_LOAD" | while IFS= read -r ext; do
 
                             pcp-load -s -l -i "$ext" >>$LOG 2>&1
 
@@ -409,21 +739,25 @@ install_squeezelite() {
 
     cd $BASE
 
-    git checkout squeezelite-sc >$LOG 2>&1 || out "git checkout sc branch"
+    git checkout squeezelite-sc >>$LOG 2>&1 || out "git checkout sc branch"
     # we need to get the makefiles from the sc branch for master
     cp Makefile.sc* /tmp
 
     if [[ "$1" == "master" ]]; then
    
-        git checkout master >$LOG 2>&1 || out "git checkout master branch"
+        git checkout master >>$LOG 2>&1 || out "git checkout master branch"
 
     fi
+    
+    #get git commit id as attachment to version string
+    GIT_COMMIT_ID=$(git -C $BASE rev-parse --short HEAD)
+    
     #define CUSTOM_VERSION
     sed -i "/^#define CUSTOM_VERSION/d" $BASE/squeezelite.h
-    sed -i "/#define MICRO_VERSION/a #define CUSTOM_VERSION -$VID" $BASE/squeezelite.h
+    sed -i "/#define MICRO_VERSION/a #define CUSTOM_VERSION -$VID-$GIT_COMMIT_ID" $BASE/squeezelite.h
 
     echo -e "\tbuilding"
-    make -C $BASE -f /tmp/Makefile.sc-rpi-ux-$variant >$LOG 2>&1 || out "compiling binary"
+    make -C $BASE -f /tmp/Makefile.sc-rpi-ux-$variant >>$LOG 2>&1 || out "compiling binary"
     strip -x $BASE/squeezelite
     echo -e "\tinstalling"
     sudo install --mode=755 -o root -g root $BASE/squeezelite $TCE/squeezelite-custom || out "installing binary"
@@ -472,17 +806,17 @@ mount_boot() {
     fi
     if grep -q "$BOOT_DEV" /proc/mounts; then
     
-       sudo umount "$BOOT_DEV" 2>$LOG || out "umounting boot"
+       sudo umount "$BOOT_DEV" 2>>$LOG || out "umounting boot"
        
     fi
-    sudo mount $BOOT_DEV $BOOT_MNT 2>$LOG || out "mounting boot"
+    sudo mount $BOOT_DEV $BOOT_MNT 2>>$LOG || out "mounting boot"
     sleep 1
 }
 
 
 set_isolcpus() {
 
-    echo -e "\tconfiguring cpu isolation"
+    echo -e "\tconfiguring CPU isolation"
     sed -i "s/^CPUISOL=.*/CPUISOL=\"$ISOLCPUS\"/g" $pcpcfg
     if grep -q "isolcpus" $BOOT_MNT/cmdline.txt; then
    
@@ -524,8 +858,14 @@ INSTALL() {
     check_space
     backup_extensions
     select_ext_repo
+    line
     download_extensions
-    load_extensions
+    line
+    if [[ "$DOWNLOAD_SUCCESS" == "true" ]]; then
+		verify_extensions
+	fi
+	load_extensions
+    line
     download_squeezelite
     install_squeezelite $branch
     verify_squeezelite
