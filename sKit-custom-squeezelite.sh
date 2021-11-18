@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.5
+VERSION="1.4.2-beta"
 sKit_VERSION=1.5
 
 fname="${0##*/}"
@@ -44,8 +44,9 @@ colors() {
 
 out() {
 
-    echo -e "\tprogram aborted"
-    echo -e "\t${RED}ERROR: $@ ${NC}"
+    echo
+    echo -e "\tprogram aborted:"
+    echo -e "\t${RED}ERROR: $@${NC}"
     DONE
     exit 1
 }
@@ -448,15 +449,24 @@ pcp-libsoxr-dev"
     BASE=/tmp/squeezelite
     ISOLCPUS="3"
 
-	test -d $DOWNLOAD_DIR || mkdir -p $DOWNLOAD_DIR
+	test -d "$DOWNLOAD_DIR" || mkdir -p "$DOWNLOAD_DIR"
 	rm ${DOWNLOAD_DIR}/*tcz* 2>/dev/null
 }
 
 
 set_log() {
 
+    PCP_REV="$(grep -R "piCorePlayer" /var/tmp/footer.html | awk '{print $2}')"
+    ARCH="$(uname -m)"
+    MEMORY="$(free -m | grep Mem)"
     echo -e "\tsetting up log"
     echo >$LOG
+    echo "*** sKit-custom-squeezelite: $VERSION" >>$LOG
+    echo "*** pCP version: $PCP_REV" >>$LOG
+    echo "*** Arch: $ARCH" >>$LOG
+    echo "*** $MEMORY" >>$LOG 
+    echo "**************************************************************" >>$LOG
+    echo >>$LOG
 }
 
 
@@ -641,7 +651,7 @@ download_extensions() {
 
 verify_extensions() {
 
-	echo -e "\tverifiying extension downloads"
+	echo -e "\tverifiying extensions download"
 
 	for i in 1 2 3 4; do
 
@@ -677,8 +687,13 @@ verify_extensions() {
 	echo -e "\textensions integrity check"
 	echo
 
+	if [[ "$(ls -1 "$DOWNLOAD_DIR"/*tcz 2>/dev/null | wc -l )" == "0" ]]; then
+	
+		out "tcz packages for integrity check missing"
+	
+	fi
 
-	for j in $DOWNLOAD_DIR/*.tcz; do
+	for j in "$DOWNLOAD_DIR"/*.tcz; do
 
 
 		md5_act="$(md5sum $j | awk '{print $1}' )"
@@ -707,7 +722,7 @@ verify_extensions() {
 
 		fi
 
-		echo "*** integrity check for: $j *** $stat" >>$LOG
+		echo "*** integrity check for: $j *** $stat *** $md5_orig * $md5_act" >>$LOG
 
 	done
 
@@ -750,7 +765,7 @@ download_squeezelite() {
         rm -rf $BASE
     
     fi
-    timeout 240 git clone --quiet "$REPO_SL" $BASE >>$LOG 2>&1 || out "downloading sources"
+    timeout 240 git clone --quiet "$REPO_SL" $BASE >>$LOG 2>&1 || out "downloading squeezelite sources - rerun the program"
 }
 
 
