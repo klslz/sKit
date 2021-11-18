@@ -4,7 +4,7 @@
 # custom squeezelite binary build tool for piCorePlayer
 # supporting RPi3 and RPi4 and related CM modules
 #
-# Latest Update: Nov-16-2021
+# Latest Update: Nov-18-2021
 #
 # Copyright © 2021 - Klaus Schulz
 # All rights reserved
@@ -25,7 +25,7 @@
 # If not, see http://www.gnu.org/licenses
 #
 ########################################################################
-VERSION=1.4
+VERSION=1.5
 sKit_VERSION=1.5
 
 fname="${0##*/}"
@@ -174,7 +174,7 @@ env_set() {
     ONB=$TCE/onboot.lst
     sKitbase=$TCE/sKit
     LOGDIR=$sKitbase/log
-    LOG=$LOGDIR/$fname.log
+    LOG=$LOGDIR/$fname-$(date +%d%b%Y-%H%M).log
     DOWNLOAD_DIR="/tmp/ext"
     TARGET_DIR="$TCEO"
     pcpcfg=/usr/local/etc/pcp/pcp.cfg
@@ -624,12 +624,17 @@ download_extensions() {
     end=$(date +%s)
     total=$((end-start))
     duration=$(printf '%dm:%ds\n' $(($total%3600/60)) $(($total%60)))
+
 	if [[ "$DOWNLOAD_INITIATED" == "true" ]]; then
+
 			echo
 			echo -e "\tdownload-duration: $duration"
+
 	else
+
 			echo
 			echo -e "\tall required extentions already installed"
+
 	fi
 }
 
@@ -640,20 +645,27 @@ verify_extensions() {
 
 	for i in 1 2 3 4; do
 
-        sleep 5
         if [[ -s "/tmp/skit-dl.failed" ]]; then
 
             echo
-            echo -e "${RED}\tERROR: extensions download (partially) failed - ${i}. RETRY ${NC}"
+            echo -e "${RED}\tERROR: extensions download (partially) failed >> ${YELLOW}${i}. RETRY ${NC}"
             echo
+            sleep 5
             download_extensions
 
         fi
+
 	done
 
 	if [[ -s "/tmp/skit-dl.failed" ]]; then
 
-		out "download failed 5 times = severe pCP server issues - try later or a different repo"
+		echo -e "\t${RED}ERROR:   serious extensions download issue encountered{NC}"
+		echo -e "\t${RED}         so far nothing has been changed${NC}"
+		echo -e "\t${RED}         try later or choose different repo after reboot${NC}"
+
+		sleep 5
+		REBOOT=true
+		reboot_system
 
 	fi
 
@@ -686,10 +698,16 @@ verify_extensions() {
 		fi
 
 		if [[ "$stat" == "PASSED" ]]; then
+
 			printf "${GREEN}%-15s${NC}\n" "$stat"
+
 		else
+
 			printf "${RED}%-15s${NC}\n" "$stat"
+
 		fi
+
+		echo "*** integrity check for: $j *** $stat" >>$LOG
 
 	done
 
@@ -697,7 +715,8 @@ verify_extensions() {
 
 		echo
 		echo -e "\t${RED}ERROR:   extension integrity issue detected${NC}"
-		echo -e "\t${RED}         try choosing different repo after reboot${NC}"
+		echo -e "\t${RED}         so far nothing has been changed${NC}"
+		echo -e "\t${RED}         try later or choose different repo after reboot${NC}"
 		sleep 5
 		REBOOT=true
 		reboot_system
